@@ -15,13 +15,8 @@
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Token;
+
 import org.antlr.v4.runtime.tree.ParseTree;
-import java.util.ArrayList;
-import cora.exceptions.ParserException;
-import cora.exceptions.AntlrParserException;
 import cora.parsers.CoraParser;
 import cora.parsers.ErrorCollector;
 

@@ -31,7 +31,6 @@ import cora.interfaces.rewriting.Rule;
 import cora.interfaces.rewriting.TRS;
 import cora.types.Sort;
 import cora.types.ArrowType;
-import cora.terms.Var;
 import cora.terms.UserDefinedSymbol;
 import cora.terms.FunctionalTerm;
 import cora.parsers.ErrorCollector;

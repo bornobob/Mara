@@ -43,6 +43,10 @@ jar {
   }
 }
 
+generateGrammarSource {
+    outputDirectory = new File("${project.buildDir}/generated-src/antlr/main/cora/parsers".toString())
+}
+
 // Define the main class for the application
 mainClassName = 'cora.Main'
 

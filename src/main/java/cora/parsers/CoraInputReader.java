@@ -187,7 +187,7 @@ public class CoraInputReader extends InputReader {
 
   /**
    * Reads the given parsetree (which is assumed to map to a "term" rule occurrence) into a term.
-   * @see readTermFromString.
+   * @see this.readTermFromString
    */
   private Term readTerm(ParseTree tree, ParseData pd,
                                Type expectedType) throws ParserException {
