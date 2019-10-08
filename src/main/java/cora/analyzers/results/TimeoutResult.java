@@ -25,4 +25,16 @@ public class TimeoutResult implements Result {
   public String getDeduction() {
     return String.format("Analyzer did not finish in the given timeframe of %d seconds", _timeout);
   }
+
+  /** Throws an error as you should never be wanting to set the analyzer time of a timeout result */
+  @Override
+  public void setAnalyzerTime(long timeTaken) {
+    throw new Error("Trying to set the analyzer time of a TimeoutResult");
+  }
+
+  /** @return the timeout in millis */
+  @Override
+  public long getAnalyzerTime() {
+    return _timeout * 1000;
+  }
 }

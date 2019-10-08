@@ -12,4 +12,9 @@ public interface Result {
 
   /** @return the deduction/explanation for this result */
   String getDeduction();
+
+  void setAnalyzerTime(long timeTaken);
+
+  /** @return the time taken by the analyzer task */
+  long getAnalyzerTime();
 }

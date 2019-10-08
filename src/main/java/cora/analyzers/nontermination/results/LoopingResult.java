@@ -10,6 +10,7 @@ import java.util.List;
  */
 public class LoopingResult implements Result {
   private List<Rule> _loopingRules;
+  private long _timeTaken;
 
   /** Constructor to create a LoopingResult with the looping rules as an argument */
   public LoopingResult(List<Rule> loopingRules) {
@@ -30,5 +31,17 @@ public class LoopingResult implements Result {
       result.append("\n").append(r.toString());
     }
     return result.toString();
+  }
+
+  /** Set the time taken by the analyzer */
+  @Override
+  public void setAnalyzerTime(long timeTaken) {
+    _timeTaken = timeTaken;
+  }
+
+  /** @return the time taken by the analyzer in millis */
+  @Override
+  public long getAnalyzerTime() {
+    return _timeTaken;
   }
 }

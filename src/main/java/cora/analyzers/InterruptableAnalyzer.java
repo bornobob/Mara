@@ -31,7 +31,10 @@ public abstract class InterruptableAnalyzer implements Analyzer {
     Future<Result> future = exec.submit((Callable<Result>)this::analyze);
 
     try {
-      return future.get(timeout, TimeUnit.SECONDS);
+      long startTime = System.currentTimeMillis();
+      Result res = future.get(timeout, TimeUnit.SECONDS);
+      res.setAnalyzerTime(System.currentTimeMillis() - startTime);
+      return res;
     } catch (TimeoutException ex) {
       future.cancel(true);
       return new TimeoutResult(timeout);

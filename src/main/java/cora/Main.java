@@ -45,8 +45,9 @@ public class Main {
 
       System.out.print(trs.toString() + "\n");
       var result = (new DirectLoopAnalyzer(trs)).analyze(30);
-      System.out.println(result.getResultType());
-      System.out.println(result.getDeduction());
+      System.out.println("Result type: " + result.getResultType());
+      System.out.println("Deduction:\n" + result.getDeduction());
+      System.out.println("Time taken: " + result.getAnalyzerTime() + "ms");
     }
     catch (Exception e) {
       System.out.println("Exception: " + e.getMessage());
