@@ -16,6 +16,7 @@
 package cora;
 
 import cora.analyzers.nontermination.DirectLoopAnalyzer;
+import cora.analyzers.nontermination.unfolding.UnfoldingAnalyzer;
 import cora.interfaces.rewriting.TRS;
 import cora.parsers.CoraInputReader;
 import cora.parsers.TrsInputReader;
@@ -44,7 +45,7 @@ public class Main {
       if (trs == null) return;
 
       System.out.print(trs.toString() + "\n");
-      var result = (new DirectLoopAnalyzer(trs)).analyze(30);
+      var result = (new UnfoldingAnalyzer(trs)).analyze(30);
       System.out.println("Result type: " + result.getResultType());
       System.out.println("Deduction:\n" + result.getDeduction());
       System.out.println("Time taken: " + result.getAnalyzerTime() + "ms");

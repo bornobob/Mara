@@ -47,5 +47,11 @@ public interface TRS {
    * if no such position exists, null is returned instead.
    */
   Term leftmostInnermostReduce(Term s);
+
+  /** @return a name that could be used as a fresh variable */
+  String getUniqueVariableName();
+
+  /** @return the alphabet for the TRS */
+  Alphabet getAlphabet();
 }
 

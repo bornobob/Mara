@@ -207,6 +207,7 @@ public class TrsReadingTest {
     public Position leftmostInnermostRedexPosition(Term s) { return null; }
     public Term leftmostInnermostReduce(Term s) { return null; }
     public FunctionSymbol lookupSymbol(String name) { return _symbols.get(name); }
+    public String getUniqueVariableName() { return "x"; }
   }
 
   @Test
