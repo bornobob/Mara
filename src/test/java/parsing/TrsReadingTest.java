@@ -15,6 +15,7 @@
 
 package parsing;
 
+import cora.interfaces.rewriting.Alphabet;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -208,6 +209,7 @@ public class TrsReadingTest {
     public Term leftmostInnermostReduce(Term s) { return null; }
     public FunctionSymbol lookupSymbol(String name) { return _symbols.get(name); }
     public String getUniqueVariableName() { return "x"; }
+    public Alphabet getAlphabet() { return null; }
   }
 
   @Test
