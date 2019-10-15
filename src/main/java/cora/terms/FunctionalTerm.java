@@ -259,5 +259,39 @@ public class FunctionalTerm extends TermInherit implements Term {
     }
     return true;
   }
+
+  /**
+   * Apply the unification algorithm to the term given another term.
+   *
+   * @param other the other term.
+   * @return the substitution if one exists otherwise null
+   */
+  public Substitution unify(Term other) {
+    if (other.queryTermKind() == TermKind.VARTERM) {
+      if (this.vars().contains(other.queryVariable()) || !_outputType.equals(other.queryType())) {
+        return null;
+      } else {
+        return new Subst(other.queryVariable(), this);
+      }
+    } else {
+      if (_f.equals(other.queryRoot())) {
+        if (_args.size() == other.numberImmediateSubterms()) {
+          Subst gamma = new Subst();
+          for (int i = 0; i < _args.size(); i++) {
+            Substitution gi = _args.get(i).unify(other.queryImmediateSubterm(i + 1));
+            if (gi == null) return null;
+            for (var x : gi.domain()) {
+              gamma.extend(x, gi.get(x));
+            }
+          }
+          return gamma;
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
+  }
 }
 

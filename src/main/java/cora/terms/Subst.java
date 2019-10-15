@@ -15,7 +15,9 @@
 
 package cora.terms;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import cora.interfaces.terms.Variable;
 import cora.interfaces.terms.Term;
@@ -93,6 +95,21 @@ public class Subst implements Substitution {
   /** Remove the given key/value pair. */
   public void delete(Variable key) {
     _mapping.remove(key);
+  }
+
+  public String toString() {
+    List<String> substitutions = new ArrayList<>();
+
+    for (Variable v : _mapping.keySet()) {
+      StringBuilder subst = new StringBuilder();
+      subst.append(_mapping.get(v).toString());
+      subst.append(" / ");
+      subst.append(v.toString());
+      substitutions.add(subst.toString());
+    }
+
+    return "[" + String.join(" , ", substitutions) + "]";
+
   }
 }
 

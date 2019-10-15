@@ -29,17 +29,17 @@ public interface FunctionSymbol extends Term {
    * All function symbols have a name that identifies how they are printed.
    * They are not necessarily identified uniquely by their name.
    */
-  public String queryName();
+  String queryName();
 
   /**
    * All function symbols have a type, which restricts how the symbol can be applied.
    */
-  public Type queryType();
+  Type queryType();
 
   /**
    * Returns whether the current symbol is equal to another.
    * This is the case if they have the same name, typing and other properties.
    */
-  public boolean equals(FunctionSymbol other);
+  boolean equals(FunctionSymbol other);
 }
 

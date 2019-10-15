@@ -104,5 +104,28 @@ public class UserDefinedSymbol extends LeafTermInherit implements FunctionSymbol
     if (term.numberImmediateSubterms() != 0) return false;
     return equals(term.queryRoot());
   }
+
+  /**
+   * Apply the unification algorithm to the term given another term.
+   *
+   * @param other the other term.
+   * @return the substitution if one exists otherwise null
+   */
+  @Override
+  public Substitution unify(Term other) {
+    if (other.queryTermKind() == TermKind.VARTERM) {
+      if (other.queryType().equals(queryType())) {
+        return new Subst(other.queryVariable(), this);
+      } else {
+        return null;
+      }
+    } else {
+      if (other.queryRoot().equals(this.queryRoot()) && other.numberImmediateSubterms() == 0) {
+        return new Subst();
+      } else {
+        return null;
+      }
+    }
+  }
 }
 

@@ -125,6 +125,29 @@ public class Var extends LeafTermInherit implements Variable {
     return equals(other.queryVariable());
   }
 
+  /**
+   * Apply the unification algorithm to the term given another term.
+   *
+   * @param other the other term.
+   * @return the substitution if one exists otherwise null
+   */
+  @Override
+  public Substitution unify(Term other) {
+    if (other.queryTermKind() == TermKind.VARTERM) {
+      if (this.equals(other.queryVariable())) {
+        return new Subst();
+      } else {
+        if (this.queryType().equals(other.queryType())) {
+          return new Subst(this, other);
+        } else {
+          return null;
+        }
+      }
+    } else {
+      return other.unify(this);
+    }
+  }
+
   /** Implements a total ordering on variables using the index. */
   public int compareTo(Variable other) {
     if (_index < other.queryVariableIndex()) return -1;

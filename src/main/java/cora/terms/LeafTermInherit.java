@@ -23,7 +23,6 @@ import cora.interfaces.terms.Term;
 import cora.interfaces.terms.Variable;
 import cora.interfaces.terms.Substitution;
 import cora.exceptions.IndexingError;
-import cora.exceptions.NullCallError;
 import cora.exceptions.NullInitialisationError;
 import cora.terms.positions.EmptyPosition;
 
