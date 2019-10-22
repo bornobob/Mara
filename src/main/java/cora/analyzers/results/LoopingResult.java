@@ -1,4 +1,4 @@
-package cora.analyzers.nontermination.results;
+package cora.analyzers.results;
 
 import cora.interfaces.analyzers.Result;
 import cora.interfaces.rewriting.Rule;

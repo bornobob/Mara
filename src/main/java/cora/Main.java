@@ -16,7 +16,7 @@
 package cora;
 
 import cora.analyzers.nontermination.DirectLoopAnalyzer;
-import cora.analyzers.nontermination.unfolding.UnfoldingAnalyzer;
+import cora.analyzers.nontermination.UnfoldingAnalyzer;
 import cora.interfaces.rewriting.TRS;
 import cora.parsers.CoraInputReader;
 import cora.parsers.TrsInputReader;

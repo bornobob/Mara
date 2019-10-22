@@ -1,4 +1,4 @@
-package cora.analyzers.nontermination.unfolding;
+package cora.analyzers.nontermination;
 
 import com.google.common.collect.*;
 import cora.analyzers.InterruptableAnalyzer;
@@ -6,15 +6,10 @@ import cora.analyzers.results.MaybeResult;
 import cora.interfaces.analyzers.Result;
 import cora.interfaces.rewriting.Rule;
 import cora.interfaces.rewriting.TRS;
-import cora.interfaces.terms.Position;
-import cora.interfaces.terms.Substitution;
-import cora.interfaces.terms.Term;
-import cora.interfaces.terms.Variable;
+import cora.interfaces.terms.*;
 import cora.interfaces.types.Type;
 import cora.rewriting.FirstOrderRule;
-import cora.rewriting.TermRewritingSystem;
-import cora.terms.Subst;
-import cora.terms.Var;
+import cora.terms.*;
 
 import java.util.*;
 
@@ -23,6 +18,8 @@ import static com.google.common.collect.Sets.powerSet;
 
 public class UnfoldingAnalyzer extends InterruptableAnalyzer
 {
+
+
   private TRS _trs;
   private String _freshVarName;
   private int _freshVarCount;
@@ -46,7 +43,7 @@ public class UnfoldingAnalyzer extends InterruptableAnalyzer
               rr.queryLeftSide().vars().forEach(v -> freshVarSubst.extend(v, createFreshVariable(v.queryType())));
               Term lp = rr.queryLeftSide().substitute(freshVarSubst);
               Term rp = rr.queryRightSide().substitute(freshVarSubst);
-              Substitution theta = rightSide.querySubterm(p).match(lp); // θ IN mgu(r|p, l')
+              Substitution theta = rightSide.querySubterm(p).unify(lp); // θ IN mgu(r|p, l')
               if (theta != null) {
                 Rule newRule = new FirstOrderRule(xr.queryLeftSide().substitute(theta), rightSide.replaceSubterm(p, rp).substitute(theta));
                 result.add(newRule); // (l -> r[p <- r'])θ
@@ -110,8 +107,6 @@ public class UnfoldingAnalyzer extends InterruptableAnalyzer
 
   @Override
   protected Result analyze() {
-    createAugmentedTRS(_trs);
-
     return new MaybeResult();
   }
 }

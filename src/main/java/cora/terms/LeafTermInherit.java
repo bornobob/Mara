@@ -16,6 +16,8 @@
 package cora.terms;
 
 import java.util.ArrayList;
+
+import cora.exceptions.TypingError;
 import cora.interfaces.types.Type;
 import cora.interfaces.terms.FunctionSymbol;
 import cora.interfaces.terms.Position;
@@ -83,7 +85,13 @@ abstract class LeafTermInherit extends TermInherit implements Term {
 
   /** @return the replacement if pos is the empty position; otherwise throws an IndexingError */
   public Term replaceSubterm(Position pos, Term replacement) {
-    if (pos.isEmpty()) return replacement;
+    if (pos.isEmpty()) {
+      if (!queryType().equals(replacement.queryType())) {
+        throw new TypingError("LeafTermInherit", "replaceSubterm", "replacement term " +
+          replacement.toString(), replacement.queryType().toString(), queryType().toString());
+      }
+      return replacement;
+    }
     throw new IndexingError("Var", "replaceSubterm", toString(), pos.toString());
   }
 }
