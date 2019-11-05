@@ -1,4 +1,4 @@
-package cora.terms;
+package cora.analyzers.general.semiunification;
 
 import cora.exceptions.InappropriatePatternDataError;
 import cora.exceptions.IndexingError;
@@ -6,16 +6,22 @@ import cora.exceptions.NullCallError;
 import cora.exceptions.TypingError;
 import cora.interfaces.terms.*;
 import cora.interfaces.types.Type;
+import cora.terms.Subst;
+import cora.terms.TermInherit;
 import cora.terms.positions.ArgumentPosition;
 import cora.terms.positions.EmptyPosition;
 
 import java.util.ArrayList;
 
+/**
+ * RhoSymbol is used in the semi-unification algorithm.
+ * It's a substitution function.
+ */
 public class RhoSymbol extends TermInherit implements FunctionSymbol {
   private Term _arg;
   private Type _type;
 
-  public RhoSymbol(Term argument) {
+  RhoSymbol(Term argument) {
     _arg = argument;
     _type = argument.queryType();
   }
@@ -255,7 +261,6 @@ public class RhoSymbol extends TermInherit implements FunctionSymbol {
   @Override
   public boolean equals(FunctionSymbol other) {
     if (other == null) return false;
-    if (!queryName().equals(other.queryName())) return false;
-    return queryType().equals(other.queryType());
+    return queryName().equals(other.queryName());
   }
 }

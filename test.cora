@@ -1,8 +1,5 @@
-f :: a -> a -> a -> a
-g :: a -> a -> a
-0 :: a
-1 :: a
+g :: a -> b -> c
+h :: c -> a -> b
+f :: b -> c -> a
 
-f(0, 1, x) -> f(x, x, x)
-g(x, y) -> x
-g(x, y) -> y
+g(f(x,y), h(y, z)) -> g(z,x)
