@@ -47,13 +47,14 @@ public class Main {
       if (trs == null) return;
 
       System.out.print(trs.toString() + "\n");
-      var result = (new SemiUnificationAnalyzer(trs)).analyze(30);
+      var result = (new UnfoldingAnalyzer(trs)).analyze(30);
       System.out.println("Result type: " + result.getResultType());
       System.out.println("Deduction:\n" + result.getDeduction());
       System.out.println("Time taken: " + result.getAnalyzerTime() + "ms");
     }
     catch (Exception e) {
       System.out.println("Exception: " + e.getMessage());
+      e.printStackTrace();
     }
   }
 }
