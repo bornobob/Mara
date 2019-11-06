@@ -16,6 +16,8 @@
 package cora.terms;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+
 import cora.exceptions.ArityError;
 import cora.exceptions.IndexingError;
 import cora.exceptions.InappropriatePatternDataError;
@@ -287,7 +289,14 @@ public class FunctionalTerm extends TermInherit implements Term {
             Substitution gi = _args.get(i).unify(other.queryImmediateSubterm(i + 1));
             if (gi == null) return null;
             for (var x : gi.domain()) {
-              gamma.extend(x, gi.get(x));
+              if (!gamma.extend(x, gi.get(x))) return null;
+              for (Variable v : new HashSet<>(gamma.domain())) {
+                if (gamma.getReplacement(v).vars().contains(x)) {
+                  Term replacement = gamma.getReplacement(v);
+                  gamma.delete(v);
+                  gamma.extend(v, replacement.substitute(new Subst(x, gi.get(x))));
+                }
+              }
             }
           }
           return gamma;

@@ -51,8 +51,8 @@ public class UnificationTest {
     Variable y = new Var("y", baseType("o"));
     Substitution gamma = x.unify(y);
     assertEquals(1, gamma.domain().size());
-    assertTrue(gamma.domain().contains(x));
-    assertEquals(y, gamma.getReplacement(x));
+    assertTrue(gamma.domain().contains(y));
+    assertEquals(x, gamma.getReplacement(y));
     assertNotNull(y.unify(x));
   }
 
@@ -232,5 +232,49 @@ public class UnificationTest {
     assertEquals(2, gamma.domain().size());
     assertEquals(constantTerm("c", baseType("a")), gamma.getReplacement(x));
     assertEquals(unaryTerm("g", baseType("b"), constantTerm("d", baseType("b"))), gamma.getReplacement(y));
+  }
+
+  /**
+   * Unify f(x, g(d))
+   * f has type a -> b -> a
+   * VAR x with type a
+   * g has type b -> b
+   * d has type b
+   * With f(c, y)
+   * f has type a -> b -> a
+   * c has type a
+   * VAR y with type b
+   * Substitition => [c / x, g(d) / y]
+   */
+  @Test
+  public void testUnifySuccess() {
+    Variable x = new Var("x", baseType("a"));
+    Variable y = new Var("y", baseType("a"));
+    Variable z = new Var("z", baseType("a"));
+    Term t1 = new FunctionalTerm(
+      new UserDefinedSymbol("g", new ArrowType(baseType("a"), arrowType("a", "a"))), // f : a -> b -> a
+      new FunctionalTerm(
+        new UserDefinedSymbol("g", new ArrowType(baseType("a"), arrowType("a", "a"))),
+        x,
+        constantTerm("0", baseType("a"))
+      ),
+      x
+    );
+    Term t2 = new FunctionalTerm(
+      new UserDefinedSymbol("g", new ArrowType(baseType("a"), arrowType("a", "a"))), // f : a -> b -> a
+      y,
+      unaryTerm("s", baseType("a"), z)
+    );
+    Substitution gamma = t1.unify(t2);
+    assertEquals(2, gamma.domain().size());
+    assertEquals(unaryTerm("s", baseType("a"), z), gamma.getReplacement(x));
+    assertEquals(
+      new FunctionalTerm(
+        new UserDefinedSymbol("g", new ArrowType(baseType("a"), arrowType("a", "a"))),
+        unaryTerm("s", baseType("a"), z),
+        constantTerm("0", baseType("a"))
+      ),
+      gamma.getReplacement(y)
+    );
   }
 }

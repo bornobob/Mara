@@ -138,7 +138,7 @@ public class Var extends LeafTermInherit implements Variable {
         return new Subst();
       } else {
         if (this.queryType().equals(other.queryType())) {
-          return new Subst(this, other);
+          return new Subst(other.queryVariable(), this);
         } else {
           return null;
         }
