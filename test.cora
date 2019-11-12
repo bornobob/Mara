@@ -1,5 +1,11 @@
-g :: a -> b -> c
-h :: c -> a -> b
-f :: b -> c -> a
+f :: a -> a -> a -> a
++ :: a -> a -> a
+s :: a -> a
+g :: b -> b -> b
+0 :: a
 
-g(f(x,y), h(y, z)) -> g(z,x)
+f(0, s(0), x) -> f(x, +(x, x), x)
++(x, s(y)) -> s(+(x, y))
++(x, 0) -> x
+g(x, y) -> x
+g(x, y) -> y

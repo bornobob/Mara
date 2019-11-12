@@ -1,237 +1,43 @@
 package cora.analyzers.nontermination.unfolding;
 
 import cora.analyzers.general.semiunification.SemiUnification;
+import cora.analyzers.nontermination.unfolding.functionalgraph.FunctionalDependencyGraph;
+import cora.analyzers.results.LoopingResult;
 import cora.analyzers.results.MaybeResult;
 import cora.interfaces.analyzers.Result;
 import cora.interfaces.rewriting.Rule;
 import cora.interfaces.rewriting.TRS;
-import cora.interfaces.terms.FunctionSymbol;
 import cora.interfaces.terms.Position;
 import cora.interfaces.terms.Substitution;
 import cora.interfaces.terms.Term;
 import cora.rewriting.FirstOrderRule;
-import cora.terms.FunctionalTerm;
-import cora.terms.Subst;
-import cora.terms.UserDefinedSymbol;
-import cora.types.ArrowType;
-import cora.types.Sort;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+/**
+ * Implemenatation of the abstract unfolding analyzer according to the specification in the "Detecting Non-termination
+ * of Term Rewriting Systems Using an Unfolding Operator" by Etienne Payet. Adapted to work for many-sorted TRSs.
+ */
 public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
-  private interface Edge {
-    Term getFrom();
-    Term getTo();
-  }
-
-  private class FunctionalDependencyGraph {
-    private class TREdge implements Edge {
-      private Term _from;
-      private Term _to;
-
-      TREdge(Term from, Term to) {
-        _from = from;
-        _to = to;
-      }
-
-      public Term getFrom() { return _from; }
-
-      public Term getTo() { return _to; }
-
-      @Override
-      public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TREdge edge = (TREdge) o;
-
-        if (_from == null) {
-          if (edge.getFrom() != null) return false;
-        } else {
-          if (!_from.equals(edge.getFrom())) return false;
-        }
-
-        if (_to == null) {
-          return edge.getTo() == null;
-        } else {
-          return _to.equals(edge.getTo());
-        }
-      }
-    }
-
-    private class RTEdge implements Edge {
-      private Term _from;
-      private Term _to;
-
-      RTEdge(Term from, Term to) {
-        _from = from;
-        _to = to;
-      }
-
-      public Term getFrom() { return _from; }
-
-      public Term getTo() { return _to; }
-
-      @Override
-      public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        RTEdge edge = (RTEdge) o;
-
-        if (_from == null) {
-          if (edge.getFrom() != null) return false;
-        } else {
-          if (!_from.equals(edge.getFrom())) return false;
-        }
-
-        if (_to == null) {
-          return edge.getTo() == null;
-        } else {
-          return _to.equals(edge.getTo());
-        }
-      }
-    }
-
-    private List<Term> _vertices;
-    private List<Edge> _edges;
-    private List<Rule> _rules;
-
-    FunctionalDependencyGraph(List<Rule> rules) {
-      _rules = rules;
-      _vertices = new ArrayList<>();
-      _edges = new ArrayList<>();
-
-      parseRules();
-      createEdges();
-    }
-
-    private void parseRules() {
-      for (Rule r : new ArrayList<>(_rules)) {
-        _rules.remove(r);
-        Term to;
-        if (r.queryRightSide().queryTermKind() == Term.TermKind.VARTERM) {
-          to = r.queryRightSide().queryVariable();
-        } else {
-          to = r.queryRightSide().queryRoot();
-        }
-
-        boolean exists = false;
-        for (Term t : _vertices) {
-          if (isModuloRenaming(t, r.queryLeftSide())) exists = true;
-        }
-        if (!exists) {
-          _edges.add(new TREdge(r.queryLeftSide(), to));
-          _vertices.add(r.queryLeftSide());
-        }
-      }
-    }
-
-    private boolean isModuloRenaming(Term t1, Term t2) {
-      return t1.match(t2) != null && t2.match(t1) != null;
-    }
-
-    private void createEdges() {
-      for (int i = 0; i < _edges.size(); i++) {
-        Edge ltof = _edges.get(i);
-        for (int j = 0; j < _edges.size(); j++) {
-          Edge lptog = _edges.get(j);
-
-          if (_vertices.contains(ltof.getFrom()) && _vertices.contains(lptog.getFrom()) &&
-            !_vertices.contains(ltof.getTo()) && !_vertices.contains(lptog.getTo()) &&
-            ltof instanceof TREdge && lptog instanceof  TREdge &&
-            (
-              (
-                ltof.getTo().queryTermKind() == Term.TermKind.VARTERM &&
-                  ltof.getTo().queryType().equals(ltof.getFrom().queryType())
-              )
-                ||
-                lptog.getFrom().queryRoot().equals(ltof.getTo().queryRoot())
-            )) {
-            Edge newEdge = new RTEdge(ltof.getTo(), lptog.getFrom());
-            if (!_edges.contains(newEdge)) _edges.add(newEdge);
-          }
-        }
-      }
-    }
-
-    private boolean pathExists(Term t, Term g, Set<Term> visitedTerms) {
-      for (Edge e : _edges) {
-        if (e.getFrom().equals(t) && !visitedTerms.contains(e.getTo())) {
-          if (g.queryTermKind() == Term.TermKind.VARTERM && e.getFrom().queryTermKind() == Term.TermKind.VARTERM &&
-            g.queryType().equals(e.getFrom().queryType())) return true;
-          if (g.queryTermKind() != Term.TermKind.VARTERM && g.equals(e.getFrom())) return true;
-          Set<Term> newVisited = new HashSet<>(visitedTerms);
-          newVisited.add(e.getFrom());
-          if (pathExists(e.getTo(), g, newVisited)) return true;
-        }
-      }
-      return false;
-    }
-
-    private boolean pathExists(Term t, Term g) {
-      if (!_vertices.contains(t)) return false;
-      return pathExists(t, g, new HashSet<>());
-    }
-
-    boolean transitions(Term t, Term g) {
-      for (Term v : _vertices) {
-        if (v.queryRoot().equals(t.queryRoot())) {
-          if (pathExists(v, g)) {
-            boolean valid = true;
-            for (int i = 0; i < t.numberImmediateSubterms(); i++) {
-              if (t.queryImmediateSubterm(i + 1).unify(makeVariablesFresh(v.queryImmediateSubterm(i + 1))) == null &&
-                !transitions(t.queryImmediateSubterm(i + 1), v.queryImmediateSubterm(i + 1).queryTermKind() == Term.TermKind.VARTERM ? v.queryImmediateSubterm(i + 1).queryVariable() : v.queryImmediateSubterm(i + 1).queryRoot()) &&
-                !transitions(t.queryImmediateSubterm(i + 1), createFreshVariable(t.queryImmediateSubterm(i + 1).queryType(), "sigma"))) {
-                valid = false;
-                break;
-              }
-            }
-            if (valid) {
-              return true;
-            }
-          }
-        }
-      }
-      return false;
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder result = new StringBuilder();
-
-      result.append("Vertices:\n");
-      for (Term t : _vertices) {
-        result.append(" - ");
-        if (t.queryTermKind() == Term.TermKind.VARTERM) result.append(t.queryType().toString());
-        else result.append(t.toString());
-        result.append("\n");
-      }
-      result.append("\nEdges:\n");
-      for (Edge e : _edges) {
-        result.append(" - ");
-        if (e.getFrom().queryTermKind() == Term.TermKind.VARTERM) result.append(e.getFrom().queryType().toString());
-        else result.append(e.getFrom().toString());
-        result.append(" -> ");
-        if (e.getTo().queryTermKind() == Term.TermKind.VARTERM) result.append(e.getTo().queryType().toString());
-        else result.append(e.getTo().toString());
-        result.append("\n");
-      }
-
-      return result.toString();
-    }
-  }
-
   private FunctionalDependencyGraph _graph;
 
+  /**
+   * Creates an abstract unfolding analyzer using a TRS.
+   */
   public AbstractUnfoldingAnalyzer(TRS trs) {
     super(trs, 5, new SemiUnification());
-    _graph = null;
+    _graph = new FunctionalDependencyGraph(getRulesFromTRS(trs));
   }
 
-  private List<Rule> unfold(List<Rule> rewriteRules) {
-    List<Rule> result = new ArrayList<>();
+  /**
+   * The abstract unfolding operator
+   * The result is a list of type Object:
+   *  The object is either a boolean indicating with true that it is non-terminating,
+   *  or a Rule that is still useful.
+   */
+  private List<Object> unfold(List<Rule> rewriteRules) {
+    List<Object> result = new ArrayList<>();
     for (Rule xr : rewriteRules) { // l -> r IN X
       Term rightSide = xr.queryRightSide();
       for (Position p : rightSide.queryAllPositions()) {
@@ -239,14 +45,13 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
           for (int i = 0; i < _trs.queryRuleCount(); i++) {
             Rule rr = _trs.queryRule(i);
             if (rr.queryRightSide().queryType().equals(rightSide.querySubterm(p).queryType())) { // l' -> r' IN R renamed with fresh variables
-              Subst freshVarSubst = new Subst(); // substitution for fresh variables
-              rr.queryLeftSide().vars().forEach(v -> freshVarSubst.extend(v, createFreshVariable(v.queryType(), v.queryName())));
-              Term lp = rr.queryLeftSide().substitute(freshVarSubst);
-              Term rp = rr.queryRightSide().substitute(freshVarSubst);
-              Substitution theta = rightSide.querySubterm(p).unify(lp); // θ IN mgu(r|p, l')
+              Rule lr = makeVariablesFresh(rr);
+              Substitution theta = rightSide.querySubterm(p).unify(lr.queryLeftSide()); // θ IN mgu(r|p, l')
               if (theta != null) {
-                Rule newRule = new FirstOrderRule(xr.queryLeftSide().substitute(theta), rightSide.replaceSubterm(p, rp).substitute(theta));
-                result.add(newRule); // (l -> r[p <- r'])θ
+                Term left = xr.queryLeftSide().substitute(theta);
+                Term right = rightSide.replaceSubterm(p, lr.queryRightSide()).substitute(theta);
+                Object abstr = abstraction(left, right);
+                if (relevantAbstraction(abstr)) result.add(abstr);
               }
             }
           }
@@ -256,6 +61,51 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
     return result;
   }
 
+  /**
+   * The abstraction function.
+   * Gives back true if the terms semi-unify, a rule l -> r if the rule is useful, false otherwise.
+   */
+  private Object abstraction(Term l, Term r) {
+    if (_semiUnifier.semiUnify(l, r).isSuccess()) return true;
+    if (usefulRelation(l, r)) return new FirstOrderRule(l, r);
+    else return false;
+  }
+
+  /**
+   * The abstraction function for a list of rules. Applies the abstraction function for terms on each rule as follows:
+   * Apply the function with the left side combined with each possible subterm on the right side.
+   */
+  private List<Object> abstraction(List<Rule> rules) {
+    List<Object> result = new ArrayList<>();
+    for (Rule r : rules) {
+      Term right = r.queryRightSide();
+      for (Position p : right.queryAllPositions()) {
+        Term subterm = right.querySubterm(p);
+        if (subterm.queryType().equals(r.queryLeftSide().queryType())) {
+          Object abstr = abstraction(r.queryLeftSide(), subterm);
+          if (relevantAbstraction(abstr)) result.add(abstr);
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Checks if the abstraction object (which is either a boolean or a Rule) is either true or a rule.
+   */
+  private boolean relevantAbstraction(Object abstraction) {
+    if (abstraction instanceof Boolean && (boolean)abstraction) return true;
+    else return abstraction instanceof Rule;
+  }
+
+  /**
+   * The useful_R definition.
+   * Returns true if any of the three following conditions hold:
+   *  - l semi-unifies with r
+   *  - l = f(s_1, ... , s_n), r = f(t_1, ... , t_n) and, for each i IN [1, n], useful_R(s_i, t_i)
+   *  - l = g(s_1, ... , s_m), r = f(t_1, ... , t_n) and, r ->+_Gr g or r ->+_Gr tau
+   *    Where tau is the type of r
+   */
   private boolean usefulRelation(Term l, Term r) {
     if (_semiUnifier.semiUnify(l, r).isSuccess()) return true;
 
@@ -268,7 +118,7 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
             break;
           }
         }
-        if (valid) return valid;
+        if (valid) return true;
       }
 
       if (_graph.transitions(r, l.queryRoot())) return true;
@@ -277,17 +127,20 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
     return false;
   }
 
-
-
+  /**
+   * Abstract unfolding analyzer
+   */
   @Override
   protected Result analyze() {
-    List<Rule> rules = getRulesFromTRS(createAugmentedTRS(_trs));
-    _graph = new FunctionalDependencyGraph(rules);
-
-
-
-    System.out.println(_graph.toString());
-
+    List<Object> rules = abstraction(getRulesFromTRS(createAugmentedTRS(_trs)));
+    for (int i = 0; i < _maximumUnfoldings; i++) {
+      List<Rule> currentRules = new ArrayList<>();
+      for (Object r : rules) {
+        if (r instanceof Boolean) return new LoopingResult(new ArrayList<>());
+        currentRules.add((Rule)r);
+      }
+      rules = unfold(currentRules);
+    }
     return new MaybeResult();
   }
 }

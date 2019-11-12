@@ -4,27 +4,31 @@ import cora.analyzers.general.semiunification.SemiUnification;
 import cora.analyzers.results.MaybeResult;
 import cora.analyzers.results.SemiUnifyResult;
 import cora.interfaces.analyzers.Result;
-import cora.interfaces.analyzers.SemiUnifier;
 import cora.interfaces.rewriting.Rule;
 import cora.interfaces.rewriting.TRS;
 import cora.interfaces.terms.Position;
 import cora.interfaces.terms.Substitution;
 import cora.interfaces.terms.Term;
 import cora.rewriting.FirstOrderRule;
-import cora.terms.Subst;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Definition of a concrete unfolding analyzer according to the specification in the "Detecting Non-termination
+ * of Term Rewriting Systems Using an Unfolding Operator" by Etienne Payet. Adapted to work for many-sorted TRSs.
+ */
 public class ConcreteUnfoldingAnalyzer extends UnfoldingAnalyzer {
-  public ConcreteUnfoldingAnalyzer(TRS trs, int maximumUnfoldings, SemiUnifier semiUnifier) {
-    super(trs, maximumUnfoldings, semiUnifier);
-  }
-
+  /**
+   * Constructor for a concrete unfolding analyzer using a TRS.
+   */
   public ConcreteUnfoldingAnalyzer(TRS trs) {
     super(trs, 5, new SemiUnification());
   }
 
+  /**
+   * Concrete unfolding function according to the definition of the paper.
+   */
   private List<Rule> unfold(List<Rule> rewriteRules) {
     List<Rule> result = new ArrayList<>();
     for (Rule xr : rewriteRules) { // l -> r IN X
@@ -34,13 +38,10 @@ public class ConcreteUnfoldingAnalyzer extends UnfoldingAnalyzer {
           for (int i = 0; i < _trs.queryRuleCount(); i++) {
             Rule rr = _trs.queryRule(i);
             if (rr.queryRightSide().queryType().equals(rightSide.querySubterm(p).queryType())) { // l' -> r' IN R renamed with fresh variables
-              Subst freshVarSubst = new Subst(); // substitution for fresh variables
-              rr.queryLeftSide().vars().forEach(v -> freshVarSubst.extend(v, createFreshVariable(v.queryType(), v.queryName())));
-              Term lp = rr.queryLeftSide().substitute(freshVarSubst);
-              Term rp = rr.queryRightSide().substitute(freshVarSubst);
-              Substitution theta = rightSide.querySubterm(p).unify(lp); // θ IN mgu(r|p, l')
+              Rule lr = makeVariablesFresh(rr);
+              Substitution theta = rightSide.querySubterm(p).unify(lr.queryLeftSide()); // θ IN mgu(r|p, l')
               if (theta != null) {
-                Rule newRule = new FirstOrderRule(xr.queryLeftSide().substitute(theta), rightSide.replaceSubterm(p, rp).substitute(theta));
+                Rule newRule = new FirstOrderRule(xr.queryLeftSide().substitute(theta), rightSide.replaceSubterm(p, lr.queryRightSide()).substitute(theta));
                 result.add(newRule); // (l -> r[p <- r'])θ
               }
             }
@@ -53,13 +54,11 @@ public class ConcreteUnfoldingAnalyzer extends UnfoldingAnalyzer {
 
   /**
    * Concrete unfolding analyzer
-   *
-   * @return an implementation of the Result interface.
    */
   @Override
   protected Result analyze() {
     TRS augmentedTRS = createAugmentedTRS(_trs);
-    List<Rule> rules = new ArrayList<>(getRulesFromTRS(augmentedTRS));
+    List<Rule> rules = getRulesFromTRS(augmentedTRS);
     for (int i = 0; i < _maximumUnfoldings; i++) {
       for (Rule r : rules) {
         for (Position p : r.queryRightSide().queryAllPositions()) {
