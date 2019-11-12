@@ -53,6 +53,13 @@ public class ConcreteUnfoldingAnalyzer extends UnfoldingAnalyzer {
   }
 
   /**
+   * Concrete unfolding operator function used FOR TESTING PURPOSES ONLY!
+   */
+  public List<Rule> unfoldTest(List<Rule> rewriteRules) {
+    return unfold(rewriteRules);
+  }
+
+  /**
    * Concrete unfolding analyzer
    */
   @Override
