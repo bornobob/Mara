@@ -11,12 +11,10 @@ import cora.rewriting.UserDefinedAlphabet;
 import cora.terms.UserDefinedSymbol;
 import cora.types.ArrowType;
 import cora.types.Sort;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 import static org.junit.Assert.*;
 

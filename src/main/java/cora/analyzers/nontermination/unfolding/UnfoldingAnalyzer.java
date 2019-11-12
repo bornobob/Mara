@@ -19,13 +19,13 @@ import static com.google.common.collect.Sets.*;
  * Abstract class for an unfolding analyzer, to be used in both the concrete and abstract analysers.
  * The most important definition her is the function to create an augmented TRS.
  */
-abstract class UnfoldingAnalyzer extends InterruptableAnalyzer
+public abstract class UnfoldingAnalyzer extends InterruptableAnalyzer
 {
   TRS _trs;
   int _maximumUnfoldings;
   SemiUnifier _semiUnifier;
 
-  UnfoldingAnalyzer(TRS trs, int maximumUnfoldings, SemiUnifier semiUnifier) {
+  protected UnfoldingAnalyzer(TRS trs, int maximumUnfoldings, SemiUnifier semiUnifier) {
     _maximumUnfoldings = maximumUnfoldings;
     _trs = trs;
     _semiUnifier = semiUnifier;
@@ -72,6 +72,14 @@ abstract class UnfoldingAnalyzer extends InterruptableAnalyzer
     }
 
     return new TermRewritingSystem(trs.getAlphabet(), rules);
+  }
+
+  /**
+   * Public declaration to create an augmented TRS.
+   * FOR TESTING PURPOSES ONLY!!
+   */
+  public TRS createAugmentedTRSTest(TRS trs) {
+    return createAugmentedTRS(trs);
   }
 
   /**
