@@ -1,9 +1,10 @@
 package cora.analyzers.nontermination.unfolding;
 
 import cora.analyzers.general.semiunification.SemiUnification;
+import cora.analyzers.general.semiunification.SemiUnificationResult;
 import cora.analyzers.nontermination.unfolding.functionalgraph.FunctionalDependencyGraph;
-import cora.analyzers.results.LoopingResult;
 import cora.analyzers.results.MaybeResult;
+import cora.analyzers.results.SemiUnifyResult;
 import cora.interfaces.analyzers.Result;
 import cora.interfaces.rewriting.Rule;
 import cora.interfaces.rewriting.TRS;
@@ -20,6 +21,65 @@ import java.util.List;
  * of Term Rewriting Systems Using an Unfolding Operator" by Etienne Payet. Adapted to work for many-sorted TRSs.
  */
 public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
+  /**
+   * An AbstractRule is a definition that ensures we can save both a Rule and a boolean in one object.
+   * We need this because the abstraction function gives us back one of the two.
+   * Also we use this to obtain the two semi-unifying terms so that we can see the result is correct.
+   */
+  private static class AbstractRule {
+    private Rule _rule;
+    private boolean _useful;
+    private SemiUnificationResult _semiunify;
+
+    /**
+     * Cosntructor to create an AbstractRule in the case that the rule was able to semi-unify.
+     */
+    AbstractRule(SemiUnificationResult semiUnificationResult, Rule r) {
+      _semiunify = semiUnificationResult;
+      _useful = true;
+      _rule = r;
+    }
+
+    /**
+     * Constructor to create an AbstractRule, in the case that the rule is useful.
+     */
+    AbstractRule(Rule rule) {
+      _rule = rule;
+      _useful = true;
+      _semiunify = null;
+    }
+
+    /**
+     * Constructor to create a non useful AbstractRule.
+     */
+    AbstractRule() {
+      _useful = false;
+      _rule = null;
+      _semiunify = null;
+    }
+
+    /**
+     * Check if the rule semi-unified.
+     */
+    boolean semiUnified() { return _semiunify != null; }
+
+    /**
+     * Obtain the semi unification result.
+     */
+    SemiUnificationResult getSemiUnifyResult() { return _semiunify; }
+
+    /**
+     * Obtain the Rule part of the AbstractRule.
+     */
+    Rule getRule() { return _rule; }
+
+    /**
+     * Obtain whether or not a rule is useful
+     */
+    boolean isUseful() { return _useful; }
+  }
+
+
   private FunctionalDependencyGraph _graph;
 
   /**
@@ -36,8 +96,8 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
    *  The object is either a boolean indicating with true that it is non-terminating,
    *  or a Rule that is still useful.
    */
-  private List<Object> unfold(List<Rule> rewriteRules) {
-    List<Object> result = new ArrayList<>();
+  private List<AbstractRule> unfold(List<Rule> rewriteRules) {
+    List<AbstractRule> result = new ArrayList<>();
     for (Rule xr : rewriteRules) { // l -> r IN X
       Term rightSide = xr.queryRightSide();
       for (Position p : rightSide.queryAllPositions()) {
@@ -50,8 +110,8 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
               if (theta != null) {
                 Term left = xr.queryLeftSide().substitute(theta);
                 Term right = rightSide.replaceSubterm(p, lr.queryRightSide()).substitute(theta);
-                Object abstr = abstraction(left, right);
-                if (relevantAbstraction(abstr)) result.add(abstr);
+                AbstractRule abstr = abstraction(left, right);
+                if (abstr.isUseful()) result.add(abstr);
               }
             }
           }
@@ -65,37 +125,30 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
    * The abstraction function.
    * Gives back true if the terms semi-unify, a rule l -> r if the rule is useful, false otherwise.
    */
-  private Object abstraction(Term l, Term r) {
-    if (_semiUnifier.semiUnify(l, r).isSuccess()) return true;
-    if (usefulRelation(l, r)) return new FirstOrderRule(l, r);
-    else return false;
+  private AbstractRule abstraction(Term l, Term r) {
+    var semiUnifyResult = _semiUnifier.semiUnify(l, r);
+    if (semiUnifyResult.isSuccess()) return new AbstractRule(semiUnifyResult, new FirstOrderRule(l, r));
+    if (usefulRelation(l, r)) return new AbstractRule(new FirstOrderRule(l, r));
+    else return new AbstractRule();
   }
 
   /**
    * The abstraction function for a list of rules. Applies the abstraction function for terms on each rule as follows:
    * Apply the function with the left side combined with each possible subterm on the right side.
    */
-  private List<Object> abstraction(List<Rule> rules) {
-    List<Object> result = new ArrayList<>();
+  private List<AbstractRule> abstraction(List<Rule> rules) {
+    List<AbstractRule> result = new ArrayList<>();
     for (Rule r : rules) {
       Term right = r.queryRightSide();
       for (Position p : right.queryAllPositions()) {
         Term subterm = right.querySubterm(p);
         if (subterm.queryType().equals(r.queryLeftSide().queryType())) {
-          Object abstr = abstraction(r.queryLeftSide(), subterm);
-          if (relevantAbstraction(abstr)) result.add(abstr);
+          AbstractRule abstr = abstraction(r.queryLeftSide(), subterm);
+          if (abstr.isUseful()) result.add(abstr);
         }
       }
     }
     return result;
-  }
-
-  /**
-   * Checks if the abstraction object (which is either a boolean or a Rule) is either true or a rule.
-   */
-  private boolean relevantAbstraction(Object abstraction) {
-    if (abstraction instanceof Boolean && (boolean)abstraction) return true;
-    else return abstraction instanceof Rule;
   }
 
   /**
@@ -132,12 +185,12 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
    */
   @Override
   protected Result analyze() {
-    List<Object> rules = abstraction(getRulesFromTRS(createAugmentedTRS(_trs)));
+    List<AbstractRule> rules = abstraction(getRulesFromTRS(createAugmentedTRS(_trs)));
     for (int i = 0; i < _maximumUnfoldings; i++) {
       List<Rule> currentRules = new ArrayList<>();
-      for (Object r : rules) {
-        if (r instanceof Boolean) return new LoopingResult(new ArrayList<>());
-        currentRules.add((Rule)r);
+      for (AbstractRule r : rules) {
+        if (r.semiUnified()) return new SemiUnifyResult(r.getRule().queryLeftSide(), r.getRule().queryRightSide(), r.getSemiUnifyResult().getRho(), r.getSemiUnifyResult().getSigma());
+        if (r.isUseful()) currentRules.add(r.getRule());
       }
       rules = unfold(currentRules);
     }

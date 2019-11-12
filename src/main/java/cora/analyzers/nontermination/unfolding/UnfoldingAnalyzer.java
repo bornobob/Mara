@@ -104,7 +104,6 @@ abstract class UnfoldingAnalyzer extends InterruptableAnalyzer
    *  [[x, f(1, x)], [y, f(1, x)]]]
    */
   private Set<List<Object>> createSubstitutions(Set<List<Object>> cartesianProduct) {
-    System.out.println(cartesianProduct);
     Set<Variable> variables = new HashSet<>();
     cartesianProduct.forEach(tuple -> variables.add((Variable)tuple.get(0)));
     List<Set<List<Object>>> sets = new ArrayList<>();
