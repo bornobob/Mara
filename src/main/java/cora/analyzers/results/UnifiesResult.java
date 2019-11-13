@@ -22,7 +22,7 @@ public class UnifiesResult implements Result {
    */
   @Override
   public Result.ResultType getResultType() {
-    return Result.ResultType.YES;
+    return Result.ResultType.NONTERMINATES;
   }
 
   /**
