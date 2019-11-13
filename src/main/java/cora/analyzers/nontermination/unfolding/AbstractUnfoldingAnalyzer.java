@@ -26,7 +26,7 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
    * We need this because the abstraction function gives us back one of the two.
    * Also we use this to obtain the two semi-unifying terms so that we can see the result is correct.
    */
-  private static class AbstractRule {
+  public static class AbstractRule {
     private Rule _rule;
     private boolean _useful;
     private SemiUnificationResult _semiunify;
@@ -61,7 +61,7 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
     /**
      * Check if the rule semi-unified.
      */
-    boolean semiUnified() { return _semiunify != null; }
+    public boolean semiUnified() { return _semiunify != null; }
 
     /**
      * Obtain the semi unification result.
@@ -71,12 +71,19 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
     /**
      * Obtain the Rule part of the AbstractRule.
      */
-    Rule getRule() { return _rule; }
+    public Rule getRule() { return _rule; }
 
     /**
      * Obtain whether or not a rule is useful
      */
-    boolean isUseful() { return _useful; }
+    public boolean isUseful() { return _useful; }
+
+    @Override
+    public String toString() {
+      String result = "AbstractRule: useful: " + _useful + ", ";
+      if (_useful) result += "semi-unified: " + (_semiunify != null) + ", rule: " + _rule;
+      return result;
+    }
   }
 
 
@@ -112,6 +119,7 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
                 Term right = rightSide.replaceSubterm(p, lr.queryRightSide()).substitute(theta);
                 AbstractRule abstr = abstraction(left, right);
                 if (abstr.isUseful()) result.add(abstr);
+                if (abstr.semiUnified()) return result; // we found a solution, no point in doing more work.
               }
             }
           }
@@ -119,6 +127,13 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
       }
     }
     return result;
+  }
+
+  /**
+   * Abstract unfolding operator function used FOR TESTING PURPOSES ONLY!
+   */
+  public List<AbstractRule> unfoldTest(List<Rule> rewriteRules) {
+    return unfold(rewriteRules);
   }
 
   /**
@@ -145,10 +160,18 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
         if (subterm.queryType().equals(r.queryLeftSide().queryType())) {
           AbstractRule abstr = abstraction(r.queryLeftSide(), subterm);
           if (abstr.isUseful()) result.add(abstr);
+          if (abstr.semiUnified()) return result;
         }
       }
     }
     return result;
+  }
+
+  /**
+   * Abstraction function FOR TEST PURPOSES ONLY!
+   */
+  public List<AbstractRule> abstractionTest(List<Rule> rules) {
+    return abstraction(rules);
   }
 
   /**
