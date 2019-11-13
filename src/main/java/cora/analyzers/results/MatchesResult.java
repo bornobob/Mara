@@ -22,7 +22,7 @@ public class MatchesResult implements Result {
    */
   @Override
   public ResultType getResultType() {
-    return ResultType.YES;
+    return ResultType.NONTERMINATES;
   }
 
   /**

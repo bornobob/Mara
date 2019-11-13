@@ -127,6 +127,6 @@ public class DirectLoopAnalyzerTest {
   @Test
   public void testDirectLoopAnalyzerYesResult() throws AnalyzerInterruptedException {
     Result res = (new DirectLoopAnalyzer(createNonTerminatingTermRewritingSystem())).analyze(30);
-    assertEquals(Result.ResultType.YES, res.getResultType());
+    assertEquals(Result.ResultType.NONTERMINATES, res.getResultType());
   }
 }

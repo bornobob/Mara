@@ -24,7 +24,7 @@ public class SemiUnifyResult implements Result {
    */
   @Override
   public ResultType getResultType() {
-    return ResultType.YES;
+    return ResultType.NONTERMINATES;
   }
 
   /**

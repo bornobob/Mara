@@ -20,7 +20,7 @@ public class LoopingResult implements Result {
   /** @return ResultType.YES */
   @Override
   public ResultType getResultType() {
-    return ResultType.YES;
+    return ResultType.NONTERMINATES;
   }
 
   /** @return a string containing the looping rules */

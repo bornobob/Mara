@@ -5,7 +5,7 @@ package cora.interfaces.analyzers;
  */
 public interface Result {
   /** Possible result types for a result */
-  enum ResultType { NO, MAYBE, YES, TIMEOUT };
+  enum ResultType { MAYBE, NONTERMINATES, TIMEOUT };
 
   /** @return the result type of this result  */
   ResultType getResultType();
