@@ -27,7 +27,7 @@ import cora.interfaces.types.Type;
  */
 
 public interface Term {
-  public enum TermKind { VARTERM, FUNCTIONALTERM };
+  enum TermKind { VARTERM, FUNCTIONALTERM };
 
   /** Returns the type of the term. */
   Type queryType();
@@ -104,13 +104,13 @@ public interface Term {
    * Whether or not null is returned, gamma is likely to be extended (although without overriding)
    * by this function.
    */
-  public String match(Term other, Substitution gamma);
+  String match(Term other, Substitution gamma);
 
   /**
    * This method returns the substitution gamma such that <this term> gamma = other, if such a
    * substitution exists; if it does not, then null is returned instead.
    */
-  public Substitution match(Term other);
+  Substitution match(Term other);
 
   /**Returns a string representation of the term. */
   String toString();
@@ -119,5 +119,12 @@ public interface Term {
    * Performs an equality check with the given other term.
    */
   boolean equals(Term term);
+
+  /**
+   * Apply the unification algorithm to the term given another term.
+   * @param other the other term.
+   * @return the substitution if one exists otherwise null
+   */
+  Substitution unify(Term other);
 }
 

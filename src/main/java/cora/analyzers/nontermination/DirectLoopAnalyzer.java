@@ -1,7 +1,7 @@
 package cora.analyzers.nontermination;
 
 import cora.analyzers.InterruptableAnalyzer;
-import cora.analyzers.nontermination.results.LoopingResult;
+import cora.analyzers.results.LoopingResult;
 import cora.analyzers.results.MaybeResult;
 import cora.interfaces.analyzers.Result;
 import cora.interfaces.rewriting.Rule;

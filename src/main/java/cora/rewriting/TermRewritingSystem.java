@@ -15,9 +15,8 @@
 
 package cora.rewriting;
 
-import java.util.ArrayList;
-import java.util.TreeMap;
-import java.util.Collections;
+import java.util.*;
+
 import cora.exceptions.IndexingError;
 import cora.exceptions.NullInitialisationError;
 import cora.interfaces.terms.FunctionSymbol;
@@ -110,6 +109,28 @@ public class TermRewritingSystem implements TRS {
       if (result != null) return s.replaceSubterm(pos, result);
     }
     return null;
+  }
+
+  /**
+   * @return a name that could be used as a fresh variable
+   */
+  @Override
+  public String getUniqueVariableName() {
+    Set<String> varNames = new HashSet<>();
+    _rules.forEach(r -> r.queryLeftSide().vars().forEach(v -> varNames.add(v.queryName())));
+    String maxLengthString;
+    if (varNames.size() > 0) {
+      maxLengthString = Collections.max(varNames, Comparator.comparing(String::length));
+    } else {
+      maxLengthString = "";
+    }
+    return "x".repeat(maxLengthString.length() + 1);
+  }
+
+  /** @return the alphabet for the TRS */
+  @Override
+  public Alphabet getAlphabet() {
+    return _alphabet.copy();
   }
 }
 

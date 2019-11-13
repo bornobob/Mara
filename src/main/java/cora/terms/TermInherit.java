@@ -15,26 +15,17 @@
 
 package cora.terms;
 
-import java.util.ArrayList;
-import cora.exceptions.ArityError;
-import cora.exceptions.IndexingError;
-import cora.exceptions.InappropriatePatternDataError;
-import cora.exceptions.NullInitialisationError;
-import cora.exceptions.NullCallError;
-import cora.exceptions.TypingError;
-import cora.interfaces.types.Type;
 import cora.interfaces.terms.*;
-import cora.terms.positions.EmptyPosition;
 
 /**
  * A TermInherit supplies default functionality for all instances of Term.
  * This is the functionality that calls other functions in Term to for instance build up a
  * substitution or environment.
  */
-abstract class TermInherit {
-  abstract String match(Term other, Substitution gamma);
-  abstract boolean equals(Term other);
-  abstract void updateVars(Environment env);
+public abstract class TermInherit {
+  public abstract String match(Term other, Substitution gamma);
+  public abstract boolean equals(Term other);
+  public abstract void updateVars(Environment env);
 
   /** Returns the set of all variables occurring in the current term. */
   public Environment vars() {

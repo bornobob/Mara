@@ -84,6 +84,33 @@ public class TrsTest {
     return new TermRewritingSystem(alf, rules);
   }
 
+  private TermRewritingSystem createTermRewritingSystem2() {
+    ArrayList<FunctionSymbol> symbols = new ArrayList<FunctionSymbol>();
+    symbols.add(a());
+    symbols.add(b());
+    symbols.add(f());
+    symbols.add(g());
+    UserDefinedAlphabet alf = new UserDefinedAlphabet(symbols);
+
+    ArrayList<Rule> rules = new ArrayList<Rule>();
+    Var x = new Var("xxxx", baseType("o"));
+    Term left1 = new FunctionalTerm(f(), x, a());
+    Term right1 = x;
+    rules.add(new SimpleRule(left1, right1));
+    // f(x, a) -> x
+
+    ArrayList<Term> args = new ArrayList<Term>();
+    args.add(x);
+    args.add(x);
+    args.add(b());
+    Term left2 = new FunctionalTerm(g(), args);
+    Term right2 = new FunctionalTerm(f(), b(), x);
+    rules.add(new SimpleRule(left2, right2));
+    // g(x, x, b) -> f(b, x)
+
+    return new TermRewritingSystem(alf, rules);
+  }
+
   @Test
   public void testLeftmostInnermostRedex() {
     TermRewritingSystem trs = createTermRewritingSystem();
@@ -108,6 +135,15 @@ public class TrsTest {
     String str = "g(f(a, b), f(g(a, b, a), x), b)";
     Term term = CoraInputReader.readTermFromString(str, trs);
     assertTrue(trs.leftmostInnermostReduce(term) == null);
+  }
+
+  @Test
+  public void testGetUniqueVariableName() {
+    TermRewritingSystem trs = createTermRewritingSystem();
+    assertEquals("xx", trs.getUniqueVariableName());
+
+    trs = createTermRewritingSystem2();
+    assertEquals("xxxxx", trs.getUniqueVariableName());
   }
 }
 

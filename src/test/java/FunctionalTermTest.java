@@ -224,10 +224,10 @@ public class FunctionalTermTest {
   @Test
   public void testSubtermReplacementGood() {
     Term s = unaryTerm("f", baseType("o"), constantTerm("37", baseType("Int")));
-    Term t = s.replaceSubterm(new ArgumentPosition(1, new EmptyPosition()), s);
+    Term t = s.replaceSubterm(new ArgumentPosition(1, new EmptyPosition()), constantTerm("42", baseType("Int")));
     assertTrue(s.toString().equals("f(37)"));
-    assertTrue(t.queryImmediateSubterm(1).equals(s));
-    assertTrue(t.toString().equals("f(f(37))"));
+    assertTrue(t.queryImmediateSubterm(1).equals(constantTerm("42", baseType("Int"))));
+    assertTrue(t.toString().equals("f(42)"));
   }
 
   @Test(expected = IndexingError.class)

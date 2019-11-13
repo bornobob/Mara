@@ -16,6 +16,8 @@
 package cora.terms;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+
 import cora.exceptions.ArityError;
 import cora.exceptions.IndexingError;
 import cora.exceptions.InappropriatePatternDataError;
@@ -76,7 +78,7 @@ public class FunctionalTerm extends TermInherit implements Term {
    * Throws an error if the constant is null or does not have arity 1, or the argument is null.
    */
   public FunctionalTerm(FunctionSymbol f, Term arg) {
-    ArrayList<Term> args = new ArrayList<Term>();
+    ArrayList<Term> args = new ArrayList<>();
     args.add(arg);
     construct(f, args);
   }
@@ -86,7 +88,7 @@ public class FunctionalTerm extends TermInherit implements Term {
    * Throws an error if the constant does not have arity 2, or one of the arguments is null.
    */
   public FunctionalTerm(FunctionSymbol f, Term arg1, Term arg2) {
-    ArrayList<Term> args = new ArrayList<Term>();
+    ArrayList<Term> args = new ArrayList<>();
     args.add(arg1);
     args.add(arg2);
     construct(f, args);
@@ -99,7 +101,7 @@ public class FunctionalTerm extends TermInherit implements Term {
    */
   public FunctionalTerm(FunctionSymbol f, ArrayList<Term> args) {
     if (args == null) throw new NullInitialisationError("FunctionalTerm", "argument list");
-    construct(f, new ArrayList<Term>(args));
+    construct(f, new ArrayList<>(args));
   }
 
   /**
@@ -152,19 +154,19 @@ public class FunctionalTerm extends TermInherit implements Term {
   /** Returns whether (a) this term has base type, and (b) all its arguments are first-order. */
   public boolean queryFirstOrder() {
     if (_outputType.queryTypeKind() != Type.TypeKind.BASETYPE) return false;
-    for (int i = 0; i < _args.size(); i++) {
-      if (!_args.get(i).queryFirstOrder()) return false;
+    for (Term arg : _args) {
+      if (!arg.queryFirstOrder()) return false;
     }
     return true;
   }
 
   /** Returns the positions in all subterms, from left to right, followed by the empty position. */
   public ArrayList<Position> queryAllPositions() {
-    ArrayList<Position> ret = new ArrayList<Position>();
+    ArrayList<Position> ret = new ArrayList<>();
     for (int i = 0; i < _args.size(); i++) {
       ArrayList<Position> subposses = _args.get(i).queryAllPositions();
-      for (int j = 0; j < subposses.size(); j++) {
-        ret.add(new ArgumentPosition(i+1, subposses.get(j)));
+      for (Position subposs : subposses) {
+        ret.add(new ArgumentPosition(i + 1, subposs));
       }
     }
     ret.add(new EmptyPosition());
@@ -173,8 +175,8 @@ public class FunctionalTerm extends TermInherit implements Term {
 
   /** This adds the variables that occur freely in the current term into env. */
   public void updateVars(Environment env) {
-    for (int i = 0; i < _args.size(); i++) {
-      _args.get(i).updateVars(env);
+    for (Term arg : _args) {
+      arg.updateVars(env);
     }
   }
 
@@ -193,12 +195,18 @@ public class FunctionalTerm extends TermInherit implements Term {
    * such a position exists; otherwise throws an IndexingError
    */
   public Term replaceSubterm(Position pos, Term replacement) {
-    if (pos.isEmpty()) return replacement;
+    if (pos.isEmpty()) {
+      if (!queryType().equals(replacement.queryType())) {
+        throw new TypingError("FunctionalTerm", "replaceSubterm", "replacment term " +
+          replacement.toString(), replacement.queryType().toString(), queryType().toString());
+      }
+      return replacement;
+    }
     int index = pos.queryArgumentPosition();
     if (index < 1 || index > _args.size()) {
-      throw new IndexingError("FunctionalTerm", "querySubterm", toString(), pos.toString());
+      throw new IndexingError("FunctionalTerm", "replaceSubterm", toString(), pos.toString());
     }
-    ArrayList<Term> args = new ArrayList<Term>(_args);
+    ArrayList<Term> args = new ArrayList<>(_args);
     args.set(index-1, args.get(index-1).replaceSubterm(pos.queryTail(), replacement));
     return new FunctionalTerm(args, _f, _outputType);
   }
@@ -208,7 +216,7 @@ public class FunctionalTerm extends TermInherit implements Term {
    * results from replacing our old arguments by these substituted ones.
    */
   public Term substitute(Substitution gamma) {
-    ArrayList<Term> args = new ArrayList<Term>(_args);
+    ArrayList<Term> args = new ArrayList<>(_args);
     for (int i = 0; i < args.size(); i++) {
       Term t = args.get(i).substitute(gamma);
       if (t == null) {
@@ -239,13 +247,13 @@ public class FunctionalTerm extends TermInherit implements Term {
 
   /** This method gives a string representation of the term. */
   public String toString() {
-    String ret = _f.toString();
+    StringBuilder ret = new StringBuilder(_f.toString());
     if (_args.size() > 0) {
-      ret += "(" + _args.get(0).toString();
-      for (int i = 1; i < _args.size(); i++) ret += ", " + _args.get(i).toString();
-      ret += ")";
+      ret.append("(").append(_args.get(0).toString());
+      for (int i = 1; i < _args.size(); i++) ret.append(", ").append(_args.get(i).toString());
+      ret.append(")");
     }
-    return ret;
+    return ret.toString();
   }
 
   /** This method verifies equality to another Term. */
@@ -258,6 +266,47 @@ public class FunctionalTerm extends TermInherit implements Term {
       if (!_args.get(i).equals(term.queryImmediateSubterm(i+1))) return false;
     }
     return true;
+  }
+
+  /**
+   * Apply the unification algorithm to the term given another term.
+   *
+   * @param other the other term.
+   * @return the substitution if one exists otherwise null
+   */
+  public Substitution unify(Term other) {
+    if (other.queryTermKind() == TermKind.VARTERM) {
+      if (this.vars().contains(other.queryVariable()) || !_outputType.equals(other.queryType())) {
+        return null;
+      } else {
+        return new Subst(other.queryVariable(), this);
+      }
+    } else {
+      if (_f.equals(other.queryRoot())) {
+        if (_args.size() == other.numberImmediateSubterms()) {
+          Subst gamma = new Subst();
+          for (int i = 0; i < _args.size(); i++) {
+            Substitution gi = _args.get(i).unify(other.queryImmediateSubterm(i + 1));
+            if (gi == null) return null;
+            for (var x : gi.domain()) {
+              if (!gamma.extend(x, gi.get(x))) return null;
+              for (Variable v : new HashSet<>(gamma.domain())) {
+                if (gamma.getReplacement(v).vars().contains(x)) {
+                  Term replacement = gamma.getReplacement(v);
+                  gamma.delete(v);
+                  gamma.extend(v, replacement.substitute(new Subst(x, gi.get(x))));
+                }
+              }
+            }
+          }
+          return gamma;
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
   }
 }
 

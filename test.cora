@@ -1,7 +1,11 @@
-0 :: nat
-s :: nat -> nat
+f :: a -> a -> a -> a
++ :: a -> a -> a
+s :: a -> a
+g :: a -> a -> a
+0 :: a
 
-add :: nat -> nat -> nat
-add(0, y) -> y
-add(s(x), y) -> add(x, s(y))
-
+f(0, s(0), x) -> f(x, +(x, x), x)
++(x, s(y)) -> s(+(x, y))
++(x, 0) -> x
+g(x, y) -> x
+g(x, y) -> y
