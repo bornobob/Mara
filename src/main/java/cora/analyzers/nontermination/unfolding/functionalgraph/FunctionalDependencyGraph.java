@@ -51,10 +51,9 @@ public class FunctionalDependencyGraph {
       for (Term t : _vertices) {
         if (isModuloRenaming(t, r.queryLeftSide())) exists = true;
       }
-      if (!exists) {
-        _edges.add(new Edge(r.queryLeftSide(), to, true));
-        _vertices.add(r.queryLeftSide());
-      }
+      if (!exists) _vertices.add(r.queryLeftSide());
+      Edge newEdge = new Edge(r.queryLeftSide(), to, true);
+      if (!_edges.contains(newEdge)) _edges.add(newEdge);
     }
   }
 
@@ -82,17 +81,13 @@ public class FunctionalDependencyGraph {
 
         if (_vertices.contains(ltof.getFrom()) && _vertices.contains(lptog.getFrom()) &&
           !_vertices.contains(ltof.getTo()) && !_vertices.contains(lptog.getTo()) &&
-          ltof.isTermToRootEdge() && lptog.isTermToRootEdge() &&
-          (
-            (
-              ltof.getTo().queryTermKind() == Term.TermKind.VARTERM &&
-                ltof.getTo().queryType().equals(ltof.getFrom().queryType())
-            )
-              ||
-              lptog.getFrom().queryRoot().equals(ltof.getTo().queryRoot())
-          )) {
-          Edge newEdge = new Edge(ltof.getTo(), lptog.getFrom(), false);
-          if (!_edges.contains(newEdge)) _edges.add(newEdge);
+          ltof.isTermToRootEdge() && lptog.isTermToRootEdge()) {
+
+          if ((ltof.getTo().queryTermKind() == Term.TermKind.VARTERM && lptog.getFrom().queryType().equals(ltof.getTo().queryType())) ||
+            (ltof.getTo().queryTermKind() != Term.TermKind.VARTERM && lptog.getFrom().queryRoot().equals(ltof.getTo().queryRoot()))) {
+            Edge newEdge = new Edge(ltof.getTo(), lptog.getFrom(), false);
+            if (!_edges.contains(newEdge)) _edges.add(newEdge);
+          }
         }
       }
     }
@@ -104,9 +99,9 @@ public class FunctionalDependencyGraph {
   private boolean pathExists(Term t, Term g, Set<Term> visitedTerms) {
     for (Edge e : _edges) {
       if (e.getFrom().equals(t) && !visitedTerms.contains(e.getTo())) {
-        if (g.queryTermKind() == Term.TermKind.VARTERM && e.getFrom().queryTermKind() == Term.TermKind.VARTERM &&
-          g.queryType().equals(e.getFrom().queryType())) return true;
-        if (g.queryTermKind() != Term.TermKind.VARTERM && g.equals(e.getFrom())) return true;
+        if (g.queryTermKind() == Term.TermKind.VARTERM && e.getTo().queryTermKind() == Term.TermKind.VARTERM &&
+          g.queryType().equals(e.getTo().queryType())) return true;
+        if (g.queryTermKind() != Term.TermKind.VARTERM && g.equals(e.getTo())) return true;
         Set<Term> newVisited = new HashSet<>(visitedTerms);
         newVisited.add(e.getFrom());
         if (pathExists(e.getTo(), g, newVisited)) return true;
@@ -171,4 +166,8 @@ public class FunctionalDependencyGraph {
   private Var createFreshVariable(Type varType, String name) {
     return new Var(String.format("%s'", name), varType);
   }
+
+  public List<Edge> getEdges() { return _edges; }
+
+  public List<Term> getVertices() { return _vertices; }
 }
