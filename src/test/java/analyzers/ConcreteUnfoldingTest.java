@@ -1,9 +1,6 @@
 package analyzers;
 
-import com.google.common.base.Functions;
 import cora.analyzers.nontermination.unfolding.ConcreteUnfoldingAnalyzer;
-import cora.analyzers.nontermination.unfolding.UnfoldingAnalyzer;
-import cora.interfaces.analyzers.Result;
 import cora.interfaces.rewriting.Rule;
 import cora.interfaces.rewriting.TRS;
 import cora.interfaces.terms.FunctionSymbol;
@@ -131,7 +128,6 @@ public class ConcreteUnfoldingTest {
 
     // second unfolding
     List<Rule> unfoldedRules2 = concreteUnfolder.unfoldTest(unfoldedRules1);
-    System.out.println(unfoldedRules2);
     assertEquals(4, unfoldedRules2.size());
     assertTrue(rulesContainStringRule(unfoldedRules2, "+(x, s(s(0)))", "s(s(x))"));
     assertTrue(rulesContainStringRule(unfoldedRules2, "+(x, s(s(s(y'))))", "s(s(s(+(x, y'))))"));
@@ -160,7 +156,6 @@ public class ConcreteUnfoldingTest {
     TRS trs = createTermRewritingSystem(typedSymbols(), new ArrayList<>(List.of(new FirstOrderRule(r1l, r1r), new FirstOrderRule(r2l, r2r), new FirstOrderRule(r3l, xa), new FirstOrderRule(r4l, xb), new FirstOrderRule(r5l, yb))));
     var concreteUnfolder = new ConcreteUnfoldingAnalyzer(trs);
     List<Rule> unfoldedRules1 = concreteUnfolder.unfoldTest(getRulesFromTRS(trs));
-    System.out.println(unfoldedRules1);
     assertEquals(4, unfoldedRules1.size());
     assertTrue(rulesContainStringRule(unfoldedRules1, "+(x, s(0))", "s(x)"));
     assertTrue(rulesContainStringRule(unfoldedRules1, "+(x, s(s(y')))", "s(s(+(x, y')))"));
@@ -169,14 +164,10 @@ public class ConcreteUnfoldingTest {
 
     // second unfolding
     List<Rule> unfoldedRules2 = concreteUnfolder.unfoldTest(unfoldedRules1);
-    System.out.println(unfoldedRules2);
     assertEquals(4, unfoldedRules2.size());
     assertTrue(rulesContainStringRule(unfoldedRules2, "+(x, s(s(0)))", "s(s(x))"));
     assertTrue(rulesContainStringRule(unfoldedRules2, "+(x, s(s(s(y'))))", "s(s(s(+(x, y'))))"));
     assertTrue(rulesContainStringRule(unfoldedRules2, "f(0, s(0), s(0))", "f(s(0), s(s(0)), s(0))"));
     assertTrue(rulesContainStringRule(unfoldedRules2, "f(0, s(0), s(s(y')))", "f(s(s(y')), s(s(+(s(s(y')), y'))), s(s(y')))"));
   }
-
-
-
 }
