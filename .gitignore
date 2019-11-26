@@ -73,3 +73,5 @@ build/generated-src/
 
 .gradle/
 gradle/
+
+META-INF/

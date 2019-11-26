@@ -4,6 +4,7 @@ import cora.analyzers.general.semiunification.SemiUnification;
 import cora.analyzers.results.MaybeResult;
 import cora.analyzers.results.SemiUnifyResult;
 import cora.interfaces.analyzers.Result;
+import cora.interfaces.analyzers.SemiUnifier;
 import cora.interfaces.rewriting.Rule;
 import cora.interfaces.rewriting.TRS;
 import cora.interfaces.terms.Position;
@@ -19,11 +20,18 @@ import java.util.List;
  * of Term Rewriting Systems Using an Unfolding Operator" by Etienne Payet. Adapted to work for many-sorted TRSs.
  */
 public class ConcreteUnfoldingAnalyzer extends UnfoldingAnalyzer {
+  private boolean _augmentTrs;
+
   /**
    * Constructor for a concrete unfolding analyzer using a TRS.
    */
   public ConcreteUnfoldingAnalyzer(TRS trs) {
-    super(trs, 5, new SemiUnification());
+    this(trs, 5, new SemiUnification(), true);
+  }
+
+  public ConcreteUnfoldingAnalyzer(TRS trs, int maxUnfoldings, SemiUnifier semiUnifier, boolean augmentTrs) {
+    super(trs, maxUnfoldings, semiUnifier);
+    _augmentTrs = augmentTrs;
   }
 
   /**
@@ -64,8 +72,8 @@ public class ConcreteUnfoldingAnalyzer extends UnfoldingAnalyzer {
    */
   @Override
   protected Result analyze() {
-    TRS augmentedTRS = createAugmentedTRS(_trs);
-    List<Rule> rules = getRulesFromTRS(augmentedTRS);
+    TRS startingRules = _augmentTrs ? createAugmentedTRS(_trs) : _trs;
+    List<Rule> rules = getRulesFromTRS(startingRules);
     for (int i = 0; i < _maximumUnfoldings; i++) {
       for (Rule r : rules) {
         for (Position p : r.queryRightSide().queryAllPositions()) {
@@ -78,6 +86,7 @@ public class ConcreteUnfoldingAnalyzer extends UnfoldingAnalyzer {
         }
       }
       rules = unfold(rules);
+      if (rules.isEmpty()) break;
     }
     return new MaybeResult();
   }

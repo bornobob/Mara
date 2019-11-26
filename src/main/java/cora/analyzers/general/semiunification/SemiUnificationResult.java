@@ -13,7 +13,7 @@ public class SemiUnificationResult {
   /**
    * Constructor to create a successful result using two substitutions.
    */
-  SemiUnificationResult(Substitution rho, Substitution sigma) {
+  public SemiUnificationResult(Substitution rho, Substitution sigma) {
     _rho = rho;
     _sigma = sigma;
     _success = true;
@@ -22,7 +22,7 @@ public class SemiUnificationResult {
   /**
    * Constructor to create a failure, the substitutions will be set to null.
    */
-  SemiUnificationResult() {
+  public SemiUnificationResult() {
     _rho = null;
     _sigma = null;
     _success = false;
