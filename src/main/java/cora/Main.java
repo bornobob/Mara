@@ -103,7 +103,15 @@ public class Main {
   }
 
   private static void showHelp() {
-    System.out.println("Help is on its way");
+    System.out.println("Usage: java -jar cora-nta.jar -i <file> [options]");
+    System.out.println("\n<file> should be a .mstrs, .trs or .cora file");
+    System.out.println("\n Additional [options] are:");
+    System.out.println("\t-t|--tech|--technqiue: choose a technique to use: either abstractUnfolding (default) or concreteUnfolding");
+    System.out.println("\t-u|--maxUnfoldings|--unfoldings: the number of maximum unfoldings to use (default 10)");
+    System.out.println("\t-a|--augmentTrs|--augment: true or false, whether or not to augment the trs as pre-processing (default true)");
+    System.out.println("\t--su|--semiUnifier: which semi-unifier to use: either semiUnifier (default) or unification");
+    System.out.println("\t--timeout: timeout for the analysis in seconds (default 60)");
+    System.out.println("\t-h|--help: show this help");
   }
 
   public static void main(String[] args) {
