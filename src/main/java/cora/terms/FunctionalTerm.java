@@ -289,12 +289,13 @@ public class FunctionalTerm extends TermInherit implements Term {
             Substitution gi = _args.get(i).unify(other.queryImmediateSubterm(i + 1));
             if (gi == null) return null;
             for (var x : gi.domain()) {
-              if (!gamma.extend(x, gi.get(x))) return null;
+              var gi_x = gi.get(x).substitute(gamma);
+              if (!gamma.extend(x, gi_x) && gamma.get(x) != null && !gamma.get(x).equals(gi_x)) return null;
               for (Variable v : new HashSet<>(gamma.domain())) {
                 if (gamma.getReplacement(v).vars().contains(x)) {
                   Term replacement = gamma.getReplacement(v);
                   gamma.delete(v);
-                  gamma.extend(v, replacement.substitute(new Subst(x, gi.get(x))));
+                  gamma.extend(v, replacement.substitute(new Subst(x, gi_x)));
                 }
               }
             }
