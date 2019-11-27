@@ -204,7 +204,7 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
       }
 
       if (_graph.transitions(r, l.queryRoot())) return true;
-      return _graph.transitions(r, createFreshVariable(r.queryType(), "theta"));
+      return _graph.transitions(r, createFreshVariable(l.queryType(), "theta"));
     }
     return false;
   }

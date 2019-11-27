@@ -137,7 +137,7 @@ public class FunctionalDependencyGraph {
             Term vSubTerm = v.queryImmediateSubterm(i + 1);
             if (tSubTerm.unify(makeVariablesFresh(vSubTerm)) == null &&
               !transitions(tSubTerm, vSubTerm.queryTermKind() == Term.TermKind.VARTERM ? vSubTerm.queryVariable() : vSubTerm.queryRoot()) &&
-              !transitions(tSubTerm, createFreshVariable(tSubTerm.queryType(), "sigma"))) {
+              !transitions(tSubTerm, createFreshVariable(vSubTerm.queryType(), "sigma"))) {
               valid = false;
               break;
             }
