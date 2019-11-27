@@ -6,6 +6,7 @@ import cora.analyzers.nontermination.unfolding.functionalgraph.FunctionalDepende
 import cora.analyzers.results.MaybeResult;
 import cora.analyzers.results.SemiUnifyResult;
 import cora.interfaces.analyzers.Result;
+import cora.interfaces.analyzers.SemiUnifier;
 import cora.interfaces.rewriting.Rule;
 import cora.interfaces.rewriting.TRS;
 import cora.interfaces.terms.Position;
@@ -86,15 +87,20 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
     }
   }
 
-
+  private boolean _augmentTrs;
   private FunctionalDependencyGraph _graph;
 
   /**
    * Creates an abstract unfolding analyzer using a TRS.
    */
   public AbstractUnfoldingAnalyzer(TRS trs) {
-    super(trs, 5, new SemiUnification());
+    this(trs, 5, new SemiUnification(), true);
+  }
+
+  public AbstractUnfoldingAnalyzer(TRS trs, int maxUnfoldings, SemiUnifier semiUnifier, boolean augmentTrs) {
+    super(trs, maxUnfoldings, semiUnifier);
     _graph = new FunctionalDependencyGraph(getRulesFromTRS(trs));
+    _augmentTrs = augmentTrs;
   }
 
   /**
@@ -208,7 +214,8 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
    */
   @Override
   protected Result analyze() {
-    List<AbstractRule> rules = abstraction(getRulesFromTRS(createAugmentedTRS(_trs)));
+    TRS startingRules = _augmentTrs ? createAugmentedTRS(_trs) : _trs;
+    List<AbstractRule> rules = abstraction(getRulesFromTRS(startingRules));
     for (int i = 0; i < _maximumUnfoldings; i++) {
       List<Rule> currentRules = new ArrayList<>();
       for (AbstractRule r : rules) {
@@ -216,6 +223,7 @@ public class AbstractUnfoldingAnalyzer extends UnfoldingAnalyzer {
         if (r.isUseful()) currentRules.add(r.getRule());
       }
       rules = unfold(currentRules);
+      if (rules.isEmpty()) break;
     }
     return new MaybeResult();
   }
