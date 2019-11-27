@@ -108,6 +108,8 @@ public class Main {
 
   public static void main(String[] args) {
     try {
+      if (args.length == 0) args = new String[] { "-i", "test.cora"};
+
       CliArgs cliArgs = new CliArgs();
       JCommander.newBuilder().addObject(cliArgs).build().parse(args);
 
