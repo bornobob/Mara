@@ -277,4 +277,54 @@ public class UnificationTest {
       gamma.getReplacement(y)
     );
   }
+
+  @Test
+  public void testUnifyComplex() {
+    Variable x = new Var("x", baseType("a"));
+    Variable y = new Var("y", baseType("a"));
+    Variable xp = new Var("x'", baseType("a"));
+    Variable yp = new Var("y'", baseType("a"));
+    Term l = new FunctionalTerm(
+      new UserDefinedSymbol("f", new ArrowType(baseType("a"), arrowType("a", "a"))),
+      x,
+      new FunctionalTerm(
+        new UserDefinedSymbol("g", new ArrowType(baseType("a"), arrowType("a", "a"))),
+        y,
+        x
+      )
+    );
+    Term r = new FunctionalTerm(
+      new UserDefinedSymbol("f", new ArrowType(baseType("a"), arrowType("a", "a"))),
+      new FunctionalTerm(
+        new UserDefinedSymbol("h", new ArrowType(baseType("a"), baseType("a"))),
+        xp
+      ),
+      yp
+    );
+    Substitution gamma = l.unify(r);
+    assertTrue(r.substitute(gamma).equals(l.substitute(gamma)));
+
+    gamma = r.unify(l);
+    assertTrue(r.substitute(gamma).equals(l.substitute(gamma)));
+  }
+
+  @Test
+  public void testDoubleSubstitution() {
+    Variable x = new Var("x", baseType("a"));
+    Variable y = new Var("y", baseType("a"));
+    Term l = new FunctionalTerm(
+      new UserDefinedSymbol("f", new ArrowType(baseType("a"), arrowType("a", "a"))),
+      x,
+      x
+    );
+    Term r = new FunctionalTerm(
+      new UserDefinedSymbol("f", new ArrowType(baseType("a"), arrowType("a", "a"))),
+      y,
+      y
+    );
+
+    Substitution gamma = l.unify(r);
+    assertNotNull(gamma);
+    assertEquals(l.substitute(gamma), r.substitute(gamma));
+  }
 }
