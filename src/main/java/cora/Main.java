@@ -48,7 +48,8 @@ class CliArgs {
 
   @Parameter(
     names = { "-a", "--augmentTrs", "--augment"},
-    description = "Augment the TRS as a pre-processing step (when using an unfolding technique) default is 'true'")
+    description = "Augment the TRS as a pre-processing step (when using an unfolding technique) default is 'true'",
+    arity = 1)
   boolean augmentTrs = true;
 
   @Parameter(
