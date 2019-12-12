@@ -32,7 +32,7 @@ public class RhoSymbol extends TermInherit implements FunctionSymbol {
    */
   @Override
   public String queryName() {
-    return "p";  // p is close enough to the actual rho character
+    return "_rho_";  // p is close enough to the actual rho character
   }
 
   /**
