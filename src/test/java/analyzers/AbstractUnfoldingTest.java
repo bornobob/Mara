@@ -124,7 +124,7 @@ public class AbstractUnfoldingTest {
     assertFalse(abstractedRules.get(0).semiUnified());
     assertTrue(rulesContainStringRule(abstractedRules, "f(s(x), y, 1)", "f(x, 1, y)"));
     var unfoldedOnce = abstractUnfolder.unfoldTest(List.of(abstractedRules.get(0).getRule()));
-    assertTrue(rulesContainStringRule(unfoldedOnce, "f(s(x), y, 1)", "f(s(x), 0, 1)"));
+    assertTrue(rulesContainStringRule(unfoldedOnce, "f(s(x'), y', 1)", "f(s(x'), 0, 1)"));
   }
 
   @Test

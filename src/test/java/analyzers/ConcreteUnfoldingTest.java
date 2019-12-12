@@ -121,16 +121,17 @@ public class ConcreteUnfoldingTest {
     var concreteUnfolder = new ConcreteUnfoldingAnalyzer(trs);
     List<Rule> unfoldedRules1 = concreteUnfolder.unfoldTest(getRulesFromTRS(trs));
     assertEquals(4, unfoldedRules1.size());
-    assertTrue(rulesContainStringRule(unfoldedRules1, "+(x, s(0))", "s(x)"));
-    assertTrue(rulesContainStringRule(unfoldedRules1, "+(x, s(s(y')))", "s(s(+(x, y')))"));
+    System.out.println(unfoldedRules1);
+    assertTrue(rulesContainStringRule(unfoldedRules1, "+(x', s(0))", "s(x')"));
+    assertTrue(rulesContainStringRule(unfoldedRules1, "+(x', s(s(y')))", "s(s(+(x', y')))"));
     assertTrue(rulesContainStringRule(unfoldedRules1, "f(0, s(0), 0)", "f(0, 0, 0)"));
     assertTrue(rulesContainStringRule(unfoldedRules1, "f(0, s(0), s(y'))", "f(s(y'), s(+(s(y'), y')), s(y'))"));
 
     // second unfolding
     List<Rule> unfoldedRules2 = concreteUnfolder.unfoldTest(unfoldedRules1);
     assertEquals(4, unfoldedRules2.size());
-    assertTrue(rulesContainStringRule(unfoldedRules2, "+(x, s(s(0)))", "s(s(x))"));
-    assertTrue(rulesContainStringRule(unfoldedRules2, "+(x, s(s(s(y'))))", "s(s(s(+(x, y'))))"));
+    assertTrue(rulesContainStringRule(unfoldedRules2, "+(x', s(s(0)))", "s(s(x'))"));
+    assertTrue(rulesContainStringRule(unfoldedRules2, "+(x', s(s(s(y'))))", "s(s(s(+(x', y'))))"));
     assertTrue(rulesContainStringRule(unfoldedRules2, "f(0, s(0), s(0))", "f(s(0), s(s(0)), s(0))"));
     assertTrue(rulesContainStringRule(unfoldedRules2, "f(0, s(0), s(s(y')))", "f(s(s(y')), s(s(+(s(s(y')), y'))), s(s(y')))"));
   }
@@ -157,16 +158,16 @@ public class ConcreteUnfoldingTest {
     var concreteUnfolder = new ConcreteUnfoldingAnalyzer(trs);
     List<Rule> unfoldedRules1 = concreteUnfolder.unfoldTest(getRulesFromTRS(trs));
     assertEquals(4, unfoldedRules1.size());
-    assertTrue(rulesContainStringRule(unfoldedRules1, "+(x, s(0))", "s(x)"));
-    assertTrue(rulesContainStringRule(unfoldedRules1, "+(x, s(s(y')))", "s(s(+(x, y')))"));
+    assertTrue(rulesContainStringRule(unfoldedRules1, "+(x', s(0))", "s(x')"));
+    assertTrue(rulesContainStringRule(unfoldedRules1, "+(x', s(s(y')))", "s(s(+(x', y')))"));
     assertTrue(rulesContainStringRule(unfoldedRules1, "f(0, s(0), 0)", "f(0, 0, 0)"));
     assertTrue(rulesContainStringRule(unfoldedRules1, "f(0, s(0), s(y'))", "f(s(y'), s(+(s(y'), y')), s(y'))"));
 
     // second unfolding
     List<Rule> unfoldedRules2 = concreteUnfolder.unfoldTest(unfoldedRules1);
     assertEquals(4, unfoldedRules2.size());
-    assertTrue(rulesContainStringRule(unfoldedRules2, "+(x, s(s(0)))", "s(s(x))"));
-    assertTrue(rulesContainStringRule(unfoldedRules2, "+(x, s(s(s(y'))))", "s(s(s(+(x, y'))))"));
+    assertTrue(rulesContainStringRule(unfoldedRules2, "+(x', s(s(0)))", "s(s(x'))"));
+    assertTrue(rulesContainStringRule(unfoldedRules2, "+(x', s(s(s(y'))))", "s(s(s(+(x', y'))))"));
     assertTrue(rulesContainStringRule(unfoldedRules2, "f(0, s(0), s(0))", "f(s(0), s(s(0)), s(0))"));
     assertTrue(rulesContainStringRule(unfoldedRules2, "f(0, s(0), s(s(y')))", "f(s(s(y')), s(s(+(s(s(y')), y'))), s(s(y')))"));
   }

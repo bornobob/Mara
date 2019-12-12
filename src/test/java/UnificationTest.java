@@ -51,8 +51,8 @@ public class UnificationTest {
     Variable y = new Var("y", baseType("o"));
     Substitution gamma = x.unify(y);
     assertEquals(1, gamma.domain().size());
-    assertTrue(gamma.domain().contains(y));
-    assertEquals(x, gamma.getReplacement(y));
+    assertTrue(gamma.domain().contains(x));
+    assertEquals(y, gamma.getReplacement(x));
     assertNotNull(y.unify(x));
   }
 
@@ -150,6 +150,7 @@ public class UnificationTest {
     Substitution gamma = t1.unify(t2);
     assertEquals(1, gamma.domain().size());
     assertEquals(constantTerm("c", baseType("a")), gamma.getReplacement(x));
+    assertNotNull(t2.unify(t1));
   }
 
   /**
@@ -181,6 +182,7 @@ public class UnificationTest {
       unaryTerm("g", baseType("b"), constantTerm("d", baseType("b"))),
       gamma.getReplacement(y)
     );
+    assertNotNull(t2.unify(t1));
   }
 
   /**
@@ -200,6 +202,7 @@ public class UnificationTest {
       unaryTerm("g", baseType("b"), constantTerm("d", baseType("b")))
     );
     assertNull(x.unify(t));
+    assertNull(t.unify(x));
   }
 
   /**
@@ -232,6 +235,7 @@ public class UnificationTest {
     assertEquals(2, gamma.domain().size());
     assertEquals(constantTerm("c", baseType("a")), gamma.getReplacement(x));
     assertEquals(unaryTerm("g", baseType("b"), constantTerm("d", baseType("b"))), gamma.getReplacement(y));
+    assertNotNull(t2.unify(t1));
   }
 
   /**
@@ -276,6 +280,7 @@ public class UnificationTest {
       ),
       gamma.getReplacement(y)
     );
+    assertNotNull(t2.unify(t1));
   }
 
   @Test
@@ -326,5 +331,26 @@ public class UnificationTest {
     Substitution gamma = l.unify(r);
     assertNotNull(gamma);
     assertEquals(l.substitute(gamma), r.substitute(gamma));
+    assertNotNull(r.unify(l));
+  }
+
+  @Test
+  public void testTwoWay() {
+    Variable x = new Var("x", baseType("a"));
+    Variable y = new Var("y", baseType("a"));
+    Term l = new FunctionalTerm(
+      new UserDefinedSymbol("f", new ArrowType(baseType("a"), arrowType("a", "a"))),
+      constantTerm("1", baseType("a")),
+      x
+    );
+    Term r = new FunctionalTerm(
+      new UserDefinedSymbol("f", new ArrowType(baseType("a"), arrowType("a", "a"))),
+      y,
+      y
+    );
+
+    Substitution gamma = l.unify(r);
+    assertNotNull(gamma);
+    assertNotNull(r.unify(l));
   }
 }
