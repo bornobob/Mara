@@ -5,6 +5,9 @@ import cora.interfaces.terms.*;
 import cora.types.*;
 import cora.terms.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class UnificationTest {
   private Type baseType(String name) {
     return new Sort(name);
@@ -351,6 +354,25 @@ public class UnificationTest {
 
     Substitution gamma = l.unify(r);
     assertNotNull(gamma);
+    assertNotNull(r.unify(l));
+  }
+
+  @Test
+  public void testTwoWay2() {
+    Variable x = new Var("x", baseType("a"));
+    Variable y = new Var("y", baseType("a"));
+
+    Term l = new FunctionalTerm(
+      new UserDefinedSymbol("f", new ArrowType(baseType("a"), new ArrowType(baseType("a"), arrowType("a", "a")))),
+      new ArrayList<>(Arrays.asList(constantTerm("1", baseType("a")), y, unaryTerm("h", baseType("a"), y)))
+    );
+
+    Term r = new FunctionalTerm(
+      new UserDefinedSymbol("f", new ArrowType(baseType("a"), new ArrowType(baseType("a"), arrowType("a", "a")))),
+      new ArrayList<>(Arrays.asList(x, x, unaryTerm("h", baseType("a"), y)))
+    );
+
+    assertNotNull(l.unify(r));
     assertNotNull(r.unify(l));
   }
 }
