@@ -3,6 +3,7 @@ package cora.analyzers.nontermination.unfolding;
 import cora.analyzers.general.semiunification.SemiUnification;
 import cora.analyzers.results.MaybeResult;
 import cora.analyzers.results.SemiUnifyResult;
+import cora.analyzers.results.UnfoldsResult;
 import cora.interfaces.analyzers.Result;
 import cora.interfaces.analyzers.SemiUnifier;
 import cora.interfaces.rewriting.Rule;
@@ -37,10 +38,10 @@ public class ConcreteUnfoldingAnalyzer extends UnfoldingAnalyzer {
   /**
    * Concrete unfolding function according to the definition of the paper.
    */
-  private List<Rule> unfold(List<Rule> rewriteRules) {
-    List<Rule> result = new ArrayList<>();
-    for (Rule xr : rewriteRules) { // l -> r IN X
-      Term rightSide = xr.queryRightSide();
+  private List<UnfoldedRule> unfold(List<UnfoldedRule> rewriteRules) {
+    List<UnfoldedRule> result = new ArrayList<>();
+    for (UnfoldedRule xr : rewriteRules) { // l -> r IN X
+      Term rightSide = xr.getRule().queryRightSide();
       for (Position p : rightSide.queryAllPositions()) {
         if (rightSide.querySubterm(p).queryTermKind() != Term.TermKind.VARTERM) { // p IN NPos(r)
           for (int i = 0; i < _trs.queryRuleCount(); i++) {
@@ -49,8 +50,8 @@ public class ConcreteUnfoldingAnalyzer extends UnfoldingAnalyzer {
               Rule lr = makeVariablesFresh(rr);
               Substitution theta = rightSide.querySubterm(p).unify(lr.queryLeftSide()); // θ IN mgu(r|p, l')
               if (theta != null) {
-                Rule newRule = new FirstOrderRule(xr.queryLeftSide().substitute(theta), rightSide.replaceSubterm(p, lr.queryRightSide()).substitute(theta));
-                result.add(newRule); // (l -> r[p <- r'])θ
+                Rule newRule = new FirstOrderRule(xr.getRule().queryLeftSide().substitute(theta), rightSide.replaceSubterm(p, lr.queryRightSide()).substitute(theta));
+                result.add(new UnfoldedRule(xr, p, lr, theta, newRule)); // (l -> r[p <- r'])θ
               }
             }
           }
@@ -64,7 +65,11 @@ public class ConcreteUnfoldingAnalyzer extends UnfoldingAnalyzer {
    * Concrete unfolding operator function used FOR TESTING PURPOSES ONLY!
    */
   public List<Rule> unfoldTest(List<Rule> rewriteRules) {
-    return unfold(rewriteRules);
+    var result = new ArrayList<Rule>();
+    var input = new ArrayList<UnfoldedRule>();
+    for (Rule r : rewriteRules) input.add(new UnfoldedRule(r));
+    for (UnfoldedRule r : unfold(input)) result.add(r.getRule());
+    return result;
   }
 
   /**
@@ -74,19 +79,24 @@ public class ConcreteUnfoldingAnalyzer extends UnfoldingAnalyzer {
   protected Result analyze() {
     TRS startingRules = _augmentTrs ? createAugmentedTRS(_trs) : _trs;
     List<Rule> rules = getRulesFromTRS(startingRules);
+
+    List<UnfoldedRule> unfoldedRules = new ArrayList<>();
+    for (Rule r : rules) {
+      unfoldedRules.add(new UnfoldedRule(r));
+    }
     for (int i = 0; i < _maximumUnfoldings; i++) {
-      for (Rule r : rules) {
-        for (Position p : r.queryRightSide().queryAllPositions()) {
-          if (r.queryRightSide().querySubterm(p).queryTermKind() != Term.TermKind.VARTERM) {
-            var result = _semiUnifier.semiUnify(r.queryLeftSide(), r.queryRightSide().querySubterm(p));
+      for (UnfoldedRule r : unfoldedRules) {
+        for (Position p : r.getRule().queryRightSide().queryAllPositions()) {
+          if (r.getRule().queryRightSide().querySubterm(p).queryTermKind() != Term.TermKind.VARTERM) {
+            var result = _semiUnifier.semiUnify(r.getRule().queryLeftSide(), r.getRule().queryRightSide().querySubterm(p));
             if (result.isSuccess()) {
-              return new SemiUnifyResult(r.queryLeftSide(), r.queryRightSide().querySubterm(p), result.getRho(), result.getSigma());
+              return new UnfoldsResult(r.getRule().queryLeftSide(), r.getRule().queryRightSide().querySubterm(p), result.getRho(), result.getSigma(), r.toString());
             }
           }
         }
       }
-      rules = unfold(rules);
-      if (rules.isEmpty()) break;
+      unfoldedRules = unfold(unfoldedRules);
+      if (unfoldedRules.isEmpty()) break;
     }
     return new MaybeResult();
   }
