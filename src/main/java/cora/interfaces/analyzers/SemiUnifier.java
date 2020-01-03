@@ -1,6 +1,6 @@
 package cora.interfaces.analyzers;
 
-import cora.analyzers.general.semiunification.SemiUnificationResult;
+import cora.analysers.general.semiunification.SemiUnificationResult;
 import cora.interfaces.terms.Term;
 
 /**

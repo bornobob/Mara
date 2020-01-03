@@ -1,7 +1,7 @@
 package cora.interfaces.analyzers;
 
 /**
- * Result interface to define results for analyzers
+ * Result interface to define results for analysers
  */
 public interface Result {
   /** Possible result types for a result */

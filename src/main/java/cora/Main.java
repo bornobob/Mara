@@ -15,11 +15,11 @@
 
 package cora;
 
-import cora.analyzers.InterruptableAnalyzer;
-import cora.analyzers.general.semiunification.SemiUnification;
-import cora.analyzers.general.unification.Unification;
-import cora.analyzers.nontermination.unfolding.AbstractUnfoldingAnalyzer;
-import cora.analyzers.nontermination.unfolding.ConcreteUnfoldingAnalyzer;
+import cora.analysers.InterruptableAnalyzer;
+import cora.analysers.general.semiunification.SemiUnification;
+import cora.analysers.general.unification.Unification;
+import cora.analysers.nontermination.unfolding.AbstractUnfoldingAnalyser;
+import cora.analysers.nontermination.unfolding.ConcreteUnfoldingAnalyser;
 import cora.interfaces.analyzers.SemiUnifier;
 import cora.interfaces.rewriting.TRS;
 import cora.parsers.CoraInputReader;
@@ -96,9 +96,9 @@ public class Main {
     TRS trs = readInput(args.inputfilePath);
     switch (args.technique) {
       case "abstractUnfolding":
-        return new AbstractUnfoldingAnalyzer(trs, args.maxUnfoldings, convertSemiUnifier(args.semiUnifier), args.augmentTrs);
+        return new AbstractUnfoldingAnalyser(trs, args.maxUnfoldings, convertSemiUnifier(args.semiUnifier), args.augmentTrs);
       case "concreteUnfolding":
-        return new ConcreteUnfoldingAnalyzer(trs, args.maxUnfoldings, convertSemiUnifier(args.semiUnifier), args.augmentTrs);
+        return new ConcreteUnfoldingAnalyser(trs, args.maxUnfoldings, convertSemiUnifier(args.semiUnifier), args.augmentTrs);
     }
     throw new Exception("Unknown technique: " + args.technique);
   }
